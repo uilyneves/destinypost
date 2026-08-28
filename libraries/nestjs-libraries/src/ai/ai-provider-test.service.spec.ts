@@ -28,6 +28,21 @@ describe('AiProviderTestService', () => {
     expect(result).toEqual({ ok: true });
   });
 
+  it('testa OmniRoute pelo endpoint de modelos', async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({ ok: true, status: 200 });
+
+    const result = await service.test('omniroute', 'omni-secret', {
+      baseUrl: 'https://omniroute.example.com/v1/',
+      model: 'combo/social-copy',
+    });
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      'https://omniroute.example.com/v1/models',
+      { headers: { Authorization: 'Bearer omni-secret' } }
+    );
+    expect(result).toEqual({ ok: true });
+  });
+
   it('rejeita endpoint OpenAI compativel ausente', async () => {
     const result = await service.test('openai-compatible', 'secret', {});
 

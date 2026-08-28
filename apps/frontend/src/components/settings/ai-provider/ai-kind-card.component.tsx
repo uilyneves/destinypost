@@ -25,6 +25,7 @@ import { SearchableModelSelect } from './searchable-model-select';
 
 const SENTINEL = '__REDACTED__';
 const MASK = '••••••••';
+const OMNIROUTE_BASE_URL = 'https://omniroute.dragaonegro.com/v1';
 
 interface ProviderOption {
   value: string;
@@ -41,6 +42,7 @@ interface KindCardProps {
 }
 
 const PROVIDER_LABELS: Record<string, string> = {
+  omniroute: 'OmniRoute',
   openrouter: 'OpenRouter',
   openai: 'OpenAI',
   'openai-compatible': 'OpenAI compatível',
@@ -52,10 +54,14 @@ const labelForProvider = (id: string) =>
   PROVIDER_LABELS[id] ?? id.charAt(0).toUpperCase() + id.slice(1).toLowerCase();
 
 const PROVIDER_ICON_PATHS: Record<string, string> = {
+  omniroute: '/multipost-icon.svg',
   openrouter: '/icons/ai/openrouter.svg',
   openai: '/icons/ai/openai.svg',
   'openai-compatible': '/icons/ai/openai.svg',
 };
+
+const isCustomOpenAiProvider = (provider: string) =>
+  provider === 'omniroute' || provider === 'openai-compatible';
 
 function providerIcon(providerId: string): React.ReactNode {
   const path = PROVIDER_ICON_PATHS[providerId];
@@ -588,7 +594,7 @@ const CredentialForm: React.FC<CredentialFormProps> = ({
     }
     if (
       kind === 'TEXT' &&
-      form.provider === 'openai-compatible' &&
+      isCustomOpenAiProvider(form.provider) &&
       !form.model.trim()
     ) {
       toaster.show(
@@ -599,7 +605,7 @@ const CredentialForm: React.FC<CredentialFormProps> = ({
     }
     if (
       kind === 'TEXT' &&
-      form.provider === 'openai-compatible' &&
+      isCustomOpenAiProvider(form.provider) &&
       !String(form.options.baseUrl ?? '').trim()
     ) {
       toaster.show(
@@ -765,7 +771,12 @@ const CredentialForm: React.FC<CredentialFormProps> = ({
           placeholder={t('ai_provider_select', 'Selecione um provedor')}
           disabled={isLocked}
           searchable={false}
-          onChange={(v) => updateField('provider', v)}
+          onChange={(v) => {
+            updateField('provider', v);
+            if (v === 'omniroute' && !form.options.baseUrl) {
+              updateOption('baseUrl', OMNIROUTE_BASE_URL);
+            }
+          }}
         />
       </FieldRow>
 
@@ -805,7 +816,7 @@ const CredentialForm: React.FC<CredentialFormProps> = ({
       {form.provider && kind !== 'WEB_SEARCH' && (
         <>
           <FieldRow label={t('ai_provider_model', 'Modelo principal')}>
-            {kind === 'TEXT' && form.provider === 'openai-compatible' ? (
+            {kind === 'TEXT' && isCustomOpenAiProvider(form.provider) ? (
               <div className="bg-newBgColorInner h-[42px] border-newTableBorder border rounded-[8px] flex items-center">
                 <input
                   className="h-full bg-transparent outline-none flex-1 text-[14px] px-[16px] disabled:opacity-100 disabled:cursor-default"
@@ -856,7 +867,7 @@ const CredentialForm: React.FC<CredentialFormProps> = ({
             <FieldRow
               label={t('ai_provider_fallback_model', 'Fallback (opcional)')}
             >
-              {form.provider === 'openai-compatible' ? (
+              {isCustomOpenAiProvider(form.provider) ? (
                 <div className="bg-newBgColorInner h-[42px] border-newTableBorder border rounded-[8px] flex items-center">
                   <input
                     className="h-full bg-transparent outline-none flex-1 text-[14px] px-[16px] disabled:opacity-100 disabled:cursor-default"
@@ -1044,7 +1055,7 @@ const DynamicOptions: React.FC<{
   if (kind === 'TEXT') {
     return (
       <>
-        {provider === 'openai-compatible' && (
+        {isCustomOpenAiProvider(provider) && (
           <FieldRow
             label={t('ai_provider_compatible_endpoint', 'URL do endpoint')}
           >
@@ -1338,7 +1349,7 @@ function sanitizeOptions(
     if (
       kind === 'TEXT' &&
       key === 'baseUrl' &&
-      provider !== 'openai-compatible'
+      !isCustomOpenAiProvider(provider)
     ) {
       continue;
     }

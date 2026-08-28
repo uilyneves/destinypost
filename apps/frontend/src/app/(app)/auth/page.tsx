@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { getT } from '@gitroom/react/translation/get.translation.service.backend';
 import { LoginWithOidc } from '@gitroom/frontend/components/auth/login.with.oidc';
 export const metadata: Metadata = {
-  title: `${isGeneralServerSide() ? 'DestinyPost' : 'Gitroom'} Register`,
+  title: `${isGeneralServerSide() ? 'MultiPost' : 'Gitroom'} Register`,
   description: '',
 };
 export default async function Auth(params: {searchParams: Promise<{provider: string}>}) {

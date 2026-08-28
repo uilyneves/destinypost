@@ -139,6 +139,25 @@ describe('AiClientFactory', () => {
       expect(result.provider).toBe('openai-compatible');
     });
 
+    it('deve usar OmniRoute como endpoint OpenAI compativel dedicado', async () => {
+      resolver.resolve.mockResolvedValue(
+        credential({
+          provider: 'omniroute',
+          model: 'combo/social-copy',
+          options: { baseUrl: 'https://omniroute.example.com/v1/' },
+        }) as any
+      );
+
+      const result = await factory.text('org-1');
+
+      expect(openaiProviderCtorSpy).toHaveBeenCalledWith({
+        apiKey: 'sk-or-real',
+        baseURL: 'https://omniroute.example.com/v1',
+      });
+      expect(openaiTextSpy).toHaveBeenCalledWith('combo/social-copy');
+      expect(result.provider).toBe('omniroute');
+    });
+
     it('deve usar default model quando credential.model e null', async () => {
       resolver.resolve.mockResolvedValue(credential({ model: null }) as any);
 

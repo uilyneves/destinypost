@@ -1,4 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="840" height="188" viewBox="0 0 840 188">
-  <title>DestinyPost</title>
-  <image href="/destinypost-logo.png" width="840" height="188" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 276 64">
+  <title>MultiPost</title>
+  <defs><linearGradient id="g" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse"><stop stop-color="#7C3AED"/><stop offset=".52" stop-color="#4F46E5"/><stop offset="1" stop-color="#06B6D4"/></linearGradient></defs>
+  <rect width="64" height="64" rx="17" fill="#0F172A"/>
+  <path d="M15 45V20.5a4.5 4.5 0 0 1 7.96-2.88L32 28.46l9.04-10.84A4.5 4.5 0 0 1 49 20.5V45" fill="none" stroke="url(#g)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="15" cy="47" r="4" fill="#A78BFA"/><circle cx="32" cy="30" r="4" fill="#818CF8"/><circle cx="49" cy="47" r="4" fill="#22D3EE"/>
+  <text x="80" y="42" fill="#0F172A" font-family="Inter,ui-sans-serif,system-ui,sans-serif" font-size="34" font-weight="700">Multi</text><text x="163" y="42" fill="#4F46E5" font-family="Inter,ui-sans-serif,system-ui,sans-serif" font-size="34" font-weight="700">Post</text>
 </svg>

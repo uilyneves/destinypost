@@ -1,8 +1,8 @@
 <p align="center">
-  <img alt="DestinyPost" src="apps/frontend/public/destinypost-logo.png" width="420" />
+  <img alt="MultiPost" src="apps/frontend/public/multipost-logo.svg" width="420" />
 </p>
 
-<h1 align="center">DestinyPost</h1>
+<h1 align="center">MultiPost</h1>
 <p align="center">Plataforma self-hosted para planejar, criar, automatizar e publicar conteúdo em redes sociais.</p>
 
 <p align="center">
@@ -10,13 +10,13 @@
     <img src="https://img.shields.io/badge/License-AGPL%203.0-blue.svg" alt="Licença AGPL-3.0" />
   </a>
   <a href="https://github.com/destinyai-dev/destinypost">
-    <img src="https://img.shields.io/badge/GitHub-destinyai--dev%2Fdestinypost-78c53a.svg" alt="Repositório DestinyPost" />
+    <img src="https://img.shields.io/badge/GitHub-destinyai--dev%2Fdestinypost-78c53a.svg" alt="Repositório MultiPost" />
   </a>
 </p>
 
-## Sobre o DestinyPost
+## Sobre o MultiPost
 
-O **DestinyPost** reúne agendamento, publicação, biblioteca de mídia, agentes de IA, criação de carrosséis, automações e integrações em uma única instalação. Cada cliente pode executar sua própria instância em uma VPS e cadastrar as próprias credenciais de redes sociais e APIs pela interface.
+O **MultiPost** reúne agendamento, publicação, biblioteca de mídia, agentes de IA, criação de carrosséis, automações e integrações em uma única instalação. Cada cliente pode executar sua própria instância em uma VPS e cadastrar as próprias credenciais de redes sociais e APIs pela interface.
 
 Principais recursos:
 
@@ -47,7 +47,7 @@ Instagram, Facebook, X, LinkedIn, TikTok, YouTube, Pinterest, Threads, Reddit, D
 
 ## Instalação para clientes
 
-A distribuição oficial é privada. O cliente recebe um token de leitura e o instalador da release autorizada. O processo instala Docker, banco de dados, Redis, Temporal, Elasticsearch, Caddy e o aplicativo DestinyPost.
+A distribuição oficial é privada. O cliente recebe um token de leitura e o instalador da release autorizada. O processo instala Docker, banco de dados, Redis, Temporal, Elasticsearch, Caddy e o aplicativo MultiPost.
 
 ```bash
 chmod +x install.sh
@@ -58,7 +58,7 @@ Durante a instalação serão solicitados:
 
 1. domínio já apontado para o IPv4 da VPS;
 2. e-mail para o certificado HTTPS;
-3. token de leitura da distribuição DestinyPost.
+3. token de leitura da distribuição MultiPost.
 
 Ao concluir, abra o domínio e crie a primeira conta. Essa conta será a administradora e o cadastro público será bloqueado depois dela.
 
@@ -94,10 +94,10 @@ Documentos importantes:
 
 ## Autoria e manutenção
 
-O **DestinyPost** é desenvolvido e mantido pela **Destiny AI**, por meio da organização [destinyai-dev](https://github.com/destinyai-dev).
+O **MultiPost** é desenvolvido e mantido pela **Destiny AI**, por meio da organização [destinyai-dev](https://github.com/destinyai-dev).
 
 ## Créditos do projeto original
 
-O DestinyPost é baseado no [Postiz](https://github.com/gitroomhq/postiz-app), desenvolvido pela equipe GitRoom HQ e licenciado sob a AGPL-3.0. Os avisos de copyright, o histórico aplicável e os termos da licença do projeto original são preservados.
+O MultiPost é baseado no [Postiz](https://github.com/gitroomhq/postiz-app), desenvolvido pela equipe GitRoom HQ e licenciado sob a AGPL-3.0. Os avisos de copyright, o histórico aplicável e os termos da licença do projeto original são preservados.
 
-As modificações do DestinyPost também são distribuídas sob a [AGPL-3.0](LICENSE).
+As modificações do MultiPost também são distribuídas sob a [AGPL-3.0](LICENSE).

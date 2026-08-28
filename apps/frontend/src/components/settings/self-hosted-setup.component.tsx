@@ -79,7 +79,7 @@ export const SelfHostedSetup: React.FC<{
       <div className="flex flex-col gap-[6px]">
         <h3 className="text-[20px] font-semibold">Preparar esta instalação</h3>
         <p className="text-[14px] text-customColor18">
-          {frontEndUrl || 'DestinyPost'} está ativo. Termine as conexões para
+          {frontEndUrl || 'MultiPost'} está ativo. Termine as conexões para
           começar a publicar.
         </p>
       </div>

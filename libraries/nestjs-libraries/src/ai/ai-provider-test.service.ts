@@ -26,6 +26,7 @@ export class AiProviderTestService {
           return await this.testOpenRouter(apiKey);
         case 'openai':
           return await this.testOpenAi(apiKey);
+        case 'omniroute':
         case 'openai-compatible':
           return await this.testOpenAiCompatible(apiKey, config);
         case 'tavily':

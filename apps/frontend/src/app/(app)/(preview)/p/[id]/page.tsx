@@ -16,7 +16,7 @@ import { LogoTextComponent } from '@gitroom/frontend/components/ui/logo-text.com
 
 dayjs.extend(utc);
 export const metadata: Metadata = {
-  title: `${isGeneralServerSide() ? 'DestinyPost' : 'Gitroom'} Preview`,
+  title: `${isGeneralServerSide() ? 'MultiPost' : 'Gitroom'} Preview`,
   description: '',
 };
 export default async function Auth(props: {

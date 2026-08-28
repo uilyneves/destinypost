@@ -105,6 +105,7 @@ export const AiProviderSettingsSection: React.FC = () => {
           )}
           icon={<TextIcon />}
           providers={[
+            { value: 'omniroute', label: 'OmniRoute' },
             { value: 'openrouter', label: 'OpenRouter' },
             { value: 'openai', label: 'OpenAI' },
             {

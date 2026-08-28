@@ -187,6 +187,7 @@ export class AiClientFactory {
           baseURL: undefined,
           model,
         };
+      case 'omniroute':
       case 'openai-compatible':
         if (!model) {
           throw new HttpException(
@@ -195,7 +196,7 @@ export class AiClientFactory {
           );
         }
         return {
-          provider: 'openai-compatible',
+          provider: credential.provider,
           apiKey: credential.apiKey,
           baseURL: customBaseUrl(credential),
           model,
@@ -266,6 +267,7 @@ export class AiClientFactory {
         const provider = createOpenAI({ apiKey: credential.apiKey });
         return provider(modelId);
       }
+      case 'omniroute':
       case 'openai-compatible': {
         const provider = createOpenAI({
           apiKey: credential.apiKey,
