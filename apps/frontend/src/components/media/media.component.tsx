@@ -614,6 +614,7 @@ export const MediaBox: FC<{
   );
 };
 export const MultiMediaComponent: FC<{
+  largePreview?: boolean;
   label: string;
   description: string;
   mediaNotAvailable?: boolean;
@@ -665,6 +666,7 @@ export const MultiMediaComponent: FC<{
     toolBar,
     information,
     mediaNotAvailable,
+    largePreview = false,
   } = props;
   const user = useUser();
   const modals = useModals();
@@ -676,6 +678,7 @@ export const MultiMediaComponent: FC<{
   }, [value]);
 
   const [currentMedia, setCurrentMedia] = useState(value);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const mediaDirectory = useMediaDirectory();
   const changeMedia = useCallback(
     (
@@ -742,31 +745,32 @@ export const MultiMediaComponent: FC<{
     }
   }, [changeMedia, t]);
 
-  const openImagePreview = useCallback(
-    (mediaPath: string) => {
-      const imageUrl = mediaDirectory.set(mediaPath);
-      modals.openModal({
-        title: t('image_preview', 'Visualizar imagem'),
-        askClose: false,
-        closeOnEscape: true,
-        size: 'calc(100% - 80px)',
-        height: 'calc(100% - 80px)',
-        children: () => (
-          <div className="flex h-[calc(100vh-180px)] w-full items-center justify-center overflow-auto rounded-[8px] bg-black/70 p-[16px]">
-            <img
-              src={imageUrl}
-              alt={t('generated_image_preview', 'Imagem gerada')}
-              className="max-h-full max-w-full object-contain"
-            />
-          </div>
-        ),
-      });
-    },
-    [mediaDirectory, modals, t]
-  );
-
   return (
     <>
+      {!!previewImage && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('image_preview', 'Visualizar imagem')}
+          className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/90 p-[24px]"
+          onClick={() => setPreviewImage(null)}
+        >
+          <button
+            type="button"
+            aria-label={t('close', 'Fechar')}
+            className="absolute end-[24px] top-[20px] z-[1001] rounded-full bg-white/15 px-[14px] py-[8px] text-[24px] text-white hover:bg-white/25"
+            onClick={() => setPreviewImage(null)}
+          >
+            ×
+          </button>
+          <img
+            src={previewImage}
+            alt={t('generated_image_preview', 'Imagem gerada')}
+            className="max-h-full max-w-full object-contain"
+            onClick={(event) => event.stopPropagation()}
+          />
+        </div>
+      )}
       <div className="b1 flex flex-col gap-[8px] rounded-bl-[8px] select-none w-full">
         <div className="flex gap-[10px] px-[12px]">
           {!!currentMedia && (
@@ -781,14 +785,20 @@ export const MultiMediaComponent: FC<{
               handle=".dragging"
             >
               {currentMedia.map((media, index) => (
-                  <div key={`${media.id}-${index}`} className="cursor-pointer rounded-[5px] w-[40px] h-[40px] border-2 border-tableBorder relative flex transition-all">
+                  <div
+                    key={`${media.id}-${index}`}
+                    className={clsx(
+                      'cursor-pointer rounded-[5px] border-2 border-tableBorder relative flex transition-all',
+                      largePreview ? 'w-[96px] h-[96px]' : 'w-[40px] h-[40px]'
+                    )}
+                  >
                     <DragHandleIcon className="z-[20] dragging absolute pe-[1px] pb-[3px] -start-[4px] -top-[4px] cursor-move" />
 
                     <div
                       className="w-full h-full relative group"
                       onClick={() =>
                         media?.path?.indexOf('mp4') === -1 &&
-                        openImagePreview(media.path)
+                        setPreviewImage(mediaDirectory.set(media.path))
                       }
                     >
                       <div

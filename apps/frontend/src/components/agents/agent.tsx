@@ -55,6 +55,7 @@ export const MediaPortal: FC<{
   return (
     <div className="pl-[14px] pr-[24px] whitespace-nowrap editor rm-bg">
       <MultiMediaComponent
+        largePreview={true}
         allData={[{ content: value }]}
         text={value}
         label={t('attachments', 'Attachments')}
