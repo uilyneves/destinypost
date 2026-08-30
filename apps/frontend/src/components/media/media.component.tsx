@@ -742,6 +742,29 @@ export const MultiMediaComponent: FC<{
     }
   }, [changeMedia, t]);
 
+  const openImagePreview = useCallback(
+    (mediaPath: string) => {
+      const imageUrl = mediaDirectory.set(mediaPath);
+      modals.openModal({
+        title: t('image_preview', 'Visualizar imagem'),
+        askClose: false,
+        closeOnEscape: true,
+        size: 'calc(100% - 80px)',
+        height: 'calc(100% - 80px)',
+        children: () => (
+          <div className="flex h-[calc(100vh-180px)] w-full items-center justify-center overflow-auto rounded-[8px] bg-black/70 p-[16px]">
+            <img
+              src={imageUrl}
+              alt={t('generated_image_preview', 'Imagem gerada')}
+              className="max-h-full max-w-full object-contain"
+            />
+          </div>
+        ),
+      });
+    },
+    [mediaDirectory, modals, t]
+  );
+
   return (
     <>
       <div className="b1 flex flex-col gap-[8px] rounded-bl-[8px] select-none w-full">
@@ -761,9 +784,16 @@ export const MultiMediaComponent: FC<{
                   <div key={`${media.id}-${index}`} className="cursor-pointer rounded-[5px] w-[40px] h-[40px] border-2 border-tableBorder relative flex transition-all">
                     <DragHandleIcon className="z-[20] dragging absolute pe-[1px] pb-[3px] -start-[4px] -top-[4px] cursor-move" />
 
-                    <div className="w-full h-full relative group">
+                    <div
+                      className="w-full h-full relative group"
+                      onClick={() =>
+                        media?.path?.indexOf('mp4') === -1 &&
+                        openImagePreview(media.path)
+                      }
+                    >
                       <div
-                        onClick={async () => {
+                        onClick={async (event) => {
+                          event.stopPropagation();
                           modals.openModal({
                             title: t('media_settings', 'Media Settings'),
                             children: (close) => (
@@ -790,7 +820,7 @@ export const MultiMediaComponent: FC<{
                             ),
                           });
                         }}
-                        className="absolute top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%] bg-black/80 rounded-[10px] opacity-0 group-hover:opacity-100 transition-opacity z-[9]"
+                        className="absolute bottom-[1px] end-[1px] bg-black/80 rounded-[6px] opacity-0 group-hover:opacity-100 transition-opacity z-[9]"
                       >
                         <MediaSettingsIcon className="cursor-pointer relative z-[200]" />
                       </div>
@@ -805,13 +835,6 @@ export const MultiMediaComponent: FC<{
                             'click_to_view_full_image',
                             'Clique para visualizar a imagem'
                           )}
-                          onClick={() =>
-                            window.open(
-                              mediaDirectory.set(media.path),
-                              '_blank',
-                              'noopener,noreferrer'
-                            )
-                          }
                         />
                       )}
                     </div>
