@@ -15,7 +15,7 @@ export class AiVideoController {
   constructor(private _mediaService: MediaService) {}
 
   /**
-   * Geracao de video via Kie.ai (Seedance 2.0 / Seedance 2 Fast / Veo 3.x).
+   * Geracao de video via OmniRoute/Adobe Firefly ou Kie.ai.
    * Delega tudo (credito + AiVideoService + uploadSimple + saveFile) para
    * MediaService.generateAiVideo, que e reusado tambem pelo MCP tool do
    * agente.

@@ -135,10 +135,13 @@ export const AiProviderSettingsSection: React.FC = () => {
           title={t('ai_provider_video_title', 'Vídeo')}
           description={t(
             'ai_provider_video_desc',
-            'Geração de vídeo via KieAI (Seedance 2.0, Veo 3.1).'
+            'Geração de vídeo via OmniRoute/Adobe Firefly ou KieAI.'
           )}
           icon={<VideoIcon />}
-          providers={[{ value: 'kieai', label: 'KieAI' }]}
+          providers={[
+            { value: 'omniroute', label: 'OmniRoute / Adobe Firefly' },
+            { value: 'kieai', label: 'KieAI' },
+          ]}
         />
 
         <AiKindCard

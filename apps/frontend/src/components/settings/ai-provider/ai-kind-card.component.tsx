@@ -810,13 +810,17 @@ const CredentialForm: React.FC<CredentialFormProps> = ({
       {form.provider && kind !== 'WEB_SEARCH' && (
         <>
           <FieldRow label={t('ai_provider_model', 'Modelo principal')}>
-            {(kind === 'TEXT' || kind === 'IMAGE') &&
+            {(kind === 'TEXT' || kind === 'IMAGE' || kind === 'VIDEO') &&
             isCustomOpenAiProvider(form.provider) ? (
               <div className="bg-newBgColorInner h-[42px] border-newTableBorder border rounded-[8px] flex items-center">
                 <input
                   className="h-full bg-transparent outline-none flex-1 text-[14px] px-[16px] disabled:opacity-100 disabled:cursor-default"
                   type="text"
-                  placeholder="gemini-2.5-flash"
+                  placeholder={
+                    kind === 'VIDEO'
+                      ? 'adobe-firefly/veo-3.1-fast'
+                      : 'gemini-2.5-flash'
+                  }
                   value={form.model}
                   disabled={isLocked}
                   onChange={(e) => updateField('model', e.target.value)}
@@ -1225,6 +1229,54 @@ const DynamicOptions: React.FC<{
         </FieldRow>
       );
     }
+  }
+
+  if (kind === 'VIDEO' && provider === 'omniroute') {
+    return (
+      <>
+        <FieldRow label={t('ai_provider_endpoint_url', 'URL do endpoint')}>
+          <input
+            type="url"
+            className="bg-newBgColorInner h-[42px] border-newTableBorder border rounded-[8px] px-[16px] outline-none text-[14px]"
+            value={options.baseUrl ?? OMNIROUTE_BASE_URL}
+            disabled={disabled}
+            placeholder={OMNIROUTE_BASE_URL}
+            onChange={(e) => onChange('baseUrl', e.target.value)}
+          />
+        </FieldRow>
+        <FieldRow label={t('ai_provider_video_duration', 'Duração (segundos)')}>
+          <input
+            type="number"
+            min={4}
+            max={10}
+            step={1}
+            className="bg-newBgColorInner h-[42px] border-newTableBorder border rounded-[8px] px-[16px] outline-none text-[14px] w-[120px]"
+            value={options.durationSeconds ?? 5}
+            disabled={disabled}
+            onChange={(e) =>
+              onChange(
+                'durationSeconds',
+                Math.max(4, Math.min(10, Math.floor(Number(e.target.value))))
+              )
+            }
+          />
+        </FieldRow>
+        <FieldRow label="">
+          <label className="flex items-center gap-[8px] cursor-pointer">
+            <input
+              type="checkbox"
+              className="w-[16px] h-[16px] accent-btnPrimary"
+              checked={options.audio !== false}
+              disabled={disabled}
+              onChange={(e) => onChange('audio', e.target.checked)}
+            />
+            <span className="text-[14px]">
+              {t('ai_provider_video_audio', 'Gerar áudio junto com o vídeo')}
+            </span>
+          </label>
+        </FieldRow>
+      </>
+    );
   }
 
   if (kind === 'VIDEO' && provider === 'kieai') {

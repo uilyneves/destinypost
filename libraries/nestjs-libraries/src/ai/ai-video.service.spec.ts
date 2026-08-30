@@ -300,6 +300,83 @@ describe('AiVideoService', () => {
     });
   });
 
+  describe('generate (OmniRoute / Adobe Firefly)', () => {
+    it('deve enviar T2V e normalizar a URL retornada', async () => {
+      resolver.resolve.mockResolvedValue(
+        credentialFor({
+          provider: 'omniroute',
+          model: 'adobe-firefly/veo-3.1-fast',
+          apiKey: 'omni-key',
+          options: {
+            baseUrl: 'https://omniroute.example/v1',
+            durationSeconds: 5,
+            audio: true,
+          },
+        }) as any
+      );
+      const fetchSpy = jest.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            created: 1,
+            data: [{ url: 'https://cdn.example/video.mp4', format: 'mp4' }],
+          }),
+          { status: 200 }
+        )
+      );
+      globalThis.fetch = fetchSpy as any;
+
+      const result = await service.generate('org-1', {
+        prompt: 'dragao voando',
+        mode: 'T2V',
+        aspectRatio: '16:9',
+        enrichPrompt: false,
+      });
+
+      expect(fetchSpy.mock.calls[0][0]).toBe(
+        'https://omniroute.example/v1/videos/generations'
+      );
+      const body = JSON.parse(fetchSpy.mock.calls[0][1].body);
+      expect(body).toMatchObject({
+        model: 'adobe-firefly/veo-3.1-fast',
+        prompt: 'dragao voando',
+        aspect_ratio: '16:9',
+        duration: 5,
+        generate_audio: true,
+      });
+      expect(body.image_url).toBeUndefined();
+      expect(result.url).toBe('https://cdn.example/video.mp4');
+      expect(result.provider).toBe('omniroute');
+    });
+
+    it('deve enviar image_url no modo I2V', async () => {
+      resolver.resolve.mockResolvedValue(
+        credentialFor({
+          provider: 'omniroute',
+          model: 'adobe-firefly/kling-3',
+          apiKey: 'omni-key',
+          options: { baseUrl: 'https://omniroute.example/v1' },
+        }) as any
+      );
+      const fetchSpy = jest.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({ data: [{ url: 'https://cdn.example/i2v.mp4' }] }),
+          { status: 200 }
+        )
+      );
+      globalThis.fetch = fetchSpy as any;
+
+      await service.generate('org-1', {
+        prompt: 'anime esta imagem',
+        mode: 'I2V',
+        referenceImageUrl: 'https://img.example/ref.png',
+        enrichPrompt: false,
+      });
+
+      const body = JSON.parse(fetchSpy.mock.calls[0][1].body);
+      expect(body.image_url).toBe('https://img.example/ref.png');
+    });
+  });
+
   describe('validacoes', () => {
     it('deve lancar 400 quando mode=I2V sem referenceImageUrl', async () => {
       resolver.resolve.mockResolvedValue(credentialFor() as any);

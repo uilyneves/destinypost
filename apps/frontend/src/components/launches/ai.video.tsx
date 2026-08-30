@@ -150,7 +150,7 @@ const VideoModal: FC<VideoModalProps> = ({ close, setLoading, onChange }) => {
         backendMessage ||
           t(
             'ai_video_upstream_error',
-            'kie.ai falhou ao gerar o vídeo. Tente novamente em alguns minutos.'
+            'O provedor falhou ao gerar o vídeo. Tente novamente em alguns minutos.'
           ),
         'warning'
       );

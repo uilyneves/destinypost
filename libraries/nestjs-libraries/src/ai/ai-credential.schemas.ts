@@ -45,6 +45,14 @@ export type ImageOptions = z.infer<typeof ImageOptionsSchema>;
 
 export const VideoOptionsSchema = z
   .object({
+    baseUrl: z
+      .string()
+      .url()
+      .max(2048)
+      .refine((value) => /^https:\/\//i.test(value), {
+        message: 'A URL deve usar https://',
+      })
+      .optional(),
     /** Resolucao do video. Aplicavel apenas a Seedance (Veo escolhe automatico). */
     resolution: z.enum(['480p', '720p', '1080p']).optional(),
     /** Duracao em segundos (4-15). Aplicavel apenas a Seedance. Veo gera ~8s fixo. */

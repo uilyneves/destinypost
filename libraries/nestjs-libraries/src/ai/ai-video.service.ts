@@ -4,6 +4,7 @@ import { AiProviderResolverService } from './ai-provider-resolver.service';
 import { AiTextService } from './ai-text.service';
 import { ResolvedAiCredential } from './ai-credential.service';
 import { VideoOptions } from './ai-credential.schemas';
+import { ssrfSafeDispatcher } from '../dtos/webhooks/ssrf.safe.dispatcher';
 
 const KIE_BASE_URL = 'https://api.kie.ai';
 const SEEDANCE_CREATE_URL = `${KIE_BASE_URL}/api/v1/jobs/createTask`;
@@ -137,9 +138,9 @@ export class AiVideoService {
       profileId
     );
 
-    if (credential.provider !== 'kieai') {
+    if (!['kieai', 'omniroute', 'openai-compatible'].includes(credential.provider)) {
       throw new HttpException(
-        `Provider sem suporte para video: ${credential.provider}. Apenas 'kieai' e suportado.`,
+        `Provider sem suporte para video: ${credential.provider}.`,
         400
       );
     }
@@ -162,6 +163,17 @@ export class AiVideoService {
       model,
     };
 
+    if (
+      credential.provider === 'omniroute' ||
+      credential.provider === 'openai-compatible'
+    ) {
+      return this.generateOpenAiCompatible(
+        credentialWithModel,
+        input,
+        finalPrompt
+      );
+    }
+
     if (SEEDANCE_MODELS.has(model)) {
       return this.generateSeedance(credentialWithModel, input, finalPrompt);
     }
@@ -174,6 +186,88 @@ export class AiVideoService {
       `Modelo de video desconhecido em credencial: ${model}.`,
       400
     );
+  }
+
+  private async generateOpenAiCompatible(
+    credential: ResolvedAiCredential,
+    input: GenerateVideoInput,
+    finalPrompt: string
+  ): Promise<GeneratedVideo> {
+    const opts = (credential.options ?? {}) as VideoOptions;
+    const baseUrl = opts.baseUrl?.trim().replace(/\/$/, '');
+    if (!baseUrl) {
+      throw new HttpException('URL do OmniRoute nao configurada.', 400);
+    }
+
+    const body: Record<string, unknown> = {
+      model: credential.model,
+      prompt: finalPrompt,
+      aspect_ratio: input.aspectRatio ?? DEFAULT_ASPECT_RATIO,
+      duration: opts.durationSeconds ?? DEFAULT_DURATION,
+      generate_audio: opts.audio !== false,
+      timeout_ms: 600_000,
+    };
+    if (input.mode === 'I2V') {
+      body.image_url = input.referenceImageUrl;
+    }
+
+    let res: Response;
+    try {
+      res = await fetch(`${baseUrl}/videos/generations`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${credential.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(650_000),
+        // @ts-ignore — opcao do undici ausente em lib.dom
+        dispatcher: ssrfSafeDispatcher,
+      });
+    } catch (e) {
+      this._logger.warn(
+        `OmniRoute video falhou (network): ${sanitize((e as Error).message)}`
+      );
+      throw new HttpException('OmniRoute indisponivel para gerar video.', 502);
+    }
+
+    const raw = await res.text();
+    let json: any = {};
+    try {
+      json = raw ? JSON.parse(raw) : {};
+    } catch {
+      json = {};
+    }
+    if (!res.ok) {
+      const detail = sanitize(
+        String(json?.error?.message ?? json?.error ?? json?.message ?? raw)
+      ).slice(0, 300);
+      this._logger.warn(`OmniRoute video retornou ${res.status}: ${detail}`);
+      const status = [400, 401, 402, 403, 408, 429].includes(res.status)
+        ? res.status
+        : 502;
+      throw new HttpException(
+        detail || `OmniRoute falhou ao gerar video (${res.status}).`,
+        status
+      );
+    }
+
+    const url =
+      json?.data?.[0]?.url ?? json?.output?.[0]?.url ?? json?.url ?? null;
+    if (!url || typeof url !== 'string') {
+      throw new HttpException(
+        'OmniRoute concluiu o video mas nao devolveu uma URL.',
+        502
+      );
+    }
+
+    return {
+      url,
+      model: credential.model ?? '',
+      taskId: String(json?.id ?? `omniroute-${Date.now()}`),
+      provider: credential.provider,
+      credentialId: credential.id,
+    };
   }
 
   private async maybeEnrichPrompt(
