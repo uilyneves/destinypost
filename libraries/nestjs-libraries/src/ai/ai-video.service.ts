@@ -243,7 +243,13 @@ export class AiVideoService {
         String(json?.error?.message ?? json?.error ?? json?.message ?? raw)
       ).slice(0, 300);
       this._logger.warn(`OmniRoute video retornou ${res.status}: ${detail}`);
-      const status = [400, 401, 402, 403, 408, 429].includes(res.status)
+      // Nunca propaga 401/403 do provedor: o frontend interpreta esses status
+      // como sessao do usuario MultiPost expirada e redireciona para /launches.
+      // 424 identifica corretamente que a dependencia externa (Adobe/OmniRoute)
+      // precisa ser reautenticada sem deslogar o usuario atual.
+      const status = [401, 403].includes(res.status)
+        ? 424
+        : [400, 402, 408, 429].includes(res.status)
         ? res.status
         : 502;
       throw new HttpException(

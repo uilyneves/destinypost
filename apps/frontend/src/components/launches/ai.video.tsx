@@ -135,6 +135,17 @@ const VideoModal: FC<VideoModalProps> = ({ close, setLoading, onChange }) => {
         );
         return false;
       }
+      if (res.status === 424) {
+        toaster.show(
+          backendMessage ||
+            t(
+              'ai_video_provider_auth_error',
+              'A sessão do provedor de vídeo expirou. Renove a conexão no OmniRoute.'
+            ),
+          'warning'
+        );
+        return false;
+      }
       if (res.status === 504) {
         toaster.show(
           backendMessage ||

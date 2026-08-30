@@ -375,6 +375,31 @@ describe('AiVideoService', () => {
       const body = JSON.parse(fetchSpy.mock.calls[0][1].body);
       expect(body.image_url).toBe('https://img.example/ref.png');
     });
+
+    it('deve converter 401 do Adobe em 424 sem deslogar o usuario', async () => {
+      resolver.resolve.mockResolvedValue(
+        credentialFor({
+          provider: 'omniroute',
+          model: 'adobe-firefly/veo-3.1-fast',
+          apiKey: 'omni-key',
+          options: { baseUrl: 'https://omniroute.example/v1' },
+        }) as any
+      );
+      globalThis.fetch = jest.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({ error: 'Adobe Firefly token invalid or expired' }),
+          { status: 401 }
+        )
+      ) as any;
+
+      await expect(
+        service.generate('org-1', {
+          prompt: 'teste',
+          mode: 'T2V',
+          enrichPrompt: false,
+        })
+      ).rejects.toMatchObject({ status: 424 });
+    });
   });
 
   describe('validacoes', () => {
