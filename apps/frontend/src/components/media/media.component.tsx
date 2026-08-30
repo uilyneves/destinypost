@@ -798,8 +798,20 @@ export const MultiMediaComponent: FC<{
                         <VideoFrame url={mediaDirectory.set(media?.path)} />
                       ) : (
                         <img
-                          className="w-full h-full object-cover rounded-[4px]"
+                          className="w-full h-full object-cover rounded-[4px] cursor-zoom-in"
                           src={mediaDirectory.set(media?.path)}
+                          alt={t('attached_media_preview', 'Mídia anexada')}
+                          title={t(
+                            'click_to_view_full_image',
+                            'Clique para visualizar a imagem'
+                          )}
+                          onClick={() =>
+                            window.open(
+                              mediaDirectory.set(media.path),
+                              '_blank',
+                              'noopener,noreferrer'
+                            )
+                          }
                         />
                       )}
                     </div>
