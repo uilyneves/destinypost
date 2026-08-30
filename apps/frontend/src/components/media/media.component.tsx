@@ -801,39 +801,41 @@ export const MultiMediaComponent: FC<{
                         setPreviewImage(mediaDirectory.set(media.path))
                       }
                     >
-                      <div
-                        onClick={async (event) => {
-                          event.stopPropagation();
-                          modals.openModal({
-                            title: t('media_settings', 'Media Settings'),
-                            children: (close) => (
-                              <MediaComponentInner
-                                media={media as any}
-                                onClose={close}
-                                onSelect={(value: any) => {
-                                  onChange({
-                                    target: {
-                                      name: 'upload',
-                                      value: currentMedia.map((p) => {
-                                        if (p.id === media.id) {
-                                          return {
-                                            ...p,
-                                            ...value,
-                                          };
-                                        }
-                                        return p;
-                                      }),
-                                    },
-                                  });
-                                }}
-                              />
-                            ),
-                          });
-                        }}
-                        className="absolute bottom-[1px] end-[1px] bg-black/80 rounded-[6px] opacity-0 group-hover:opacity-100 transition-opacity z-[9]"
-                      >
-                        <MediaSettingsIcon className="cursor-pointer relative z-[200]" />
-                      </div>
+                      {!largePreview && (
+                        <div
+                          onClick={async (event) => {
+                            event.stopPropagation();
+                            modals.openModal({
+                              title: t('media_settings', 'Media Settings'),
+                              children: (close) => (
+                                <MediaComponentInner
+                                  media={media as any}
+                                  onClose={close}
+                                  onSelect={(value: any) => {
+                                    onChange({
+                                      target: {
+                                        name: 'upload',
+                                        value: currentMedia.map((p) => {
+                                          if (p.id === media.id) {
+                                            return {
+                                              ...p,
+                                              ...value,
+                                            };
+                                          }
+                                          return p;
+                                        }),
+                                      },
+                                    });
+                                  }}
+                                />
+                              ),
+                            });
+                          }}
+                          className="absolute bottom-[1px] end-[1px] bg-black/80 rounded-[6px] opacity-0 group-hover:opacity-100 transition-opacity z-[9]"
+                        >
+                          <MediaSettingsIcon className="cursor-pointer relative z-[200]" />
+                        </div>
+                      )}
                       {media?.path?.indexOf('mp4') > -1 ? (
                         <VideoFrame url={mediaDirectory.set(media?.path)} />
                       ) : (
