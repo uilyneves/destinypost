@@ -124,6 +124,7 @@ export const AiProviderSettingsSection: React.FC = () => {
           )}
           icon={<ImageIcon />}
           providers={[
+            { value: 'omniroute', label: 'OmniRoute' },
             { value: 'openrouter', label: 'OpenRouter' },
             { value: 'openai', label: 'OpenAI' },
           ]}

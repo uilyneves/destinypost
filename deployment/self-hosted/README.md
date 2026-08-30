@@ -1,6 +1,6 @@
-# DestinyPost Self-Hosted
+# MultiPost Self-Hosted
 
-Este pacote instala uma instancia isolada do DestinyPost em uma VPS do
+Este pacote instala uma instancia isolada do MultiPost em uma VPS do
 cliente. Banco, midias, credenciais e contas sociais permanecem na VPS.
 
 ## Requisitos

@@ -1,6 +1,6 @@
-# DestinyPost — Skill de Agente
+# MultiPost — Skill de Agente
 
-Você controla uma instância **self-hosted do DestinyPost** (agendador de redes
+Você controla uma instância **self-hosted do MultiPost** (agendador de redes
 sociais, fork do Postiz) pela CLI `destinypost-agent`. Cada comando roda no shell e devolve
 **JSON no stdout**. Em erro, devolve JSON no stderr (`{"ok":false,"error":...}`) e
 sai com código 1 — então sempre cheque o exit code e parseie a saída.
@@ -22,7 +22,7 @@ Comece sempre validando: `destinypost-agent is-connected` → `{ "connected": tr
 - **Post**: publicação (agendada, imediata `now`, ou `draft`).
 - **Flow (automação de comentário)**: alguém comenta uma palavra-chave num post do
   Instagram → o sistema responde e/ou manda um link no direct. **Exclusivo do
-  DestinyPost.**
+  MultiPost.**
 
 ## 3. Fluxo recomendado
 

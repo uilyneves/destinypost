@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
- * DestinyPost — CLI/skill para agentes de IA.
+ * MultiPost — CLI/skill para agentes de IA.
  *
  * Wrapper fino e sem dependências sobre a API pública (/public/v1/*) de uma
  * instância self-hosted. Inclui automações de comentário (flows), que o CLI
@@ -236,7 +236,7 @@ const commands = {
   'is-connected': async () => out(await request('GET', '/public/v1/is-connected')),
 };
 
-const HELP = `DestinyPost — CLI para agentes
+const HELP = `MultiPost — CLI para agentes
 
 Config (env):
   DESTINYPOST_API_KEY   chave de API (org ou perfil)

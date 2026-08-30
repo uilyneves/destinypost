@@ -28,4 +28,4 @@ COPY var/docker/nginx.conf /etc/nginx/nginx.conf
 RUN pnpm install
 RUN NODE_OPTIONS="--max-old-space-size=4096" pnpm run build
 
-CMD ["sh", "-c", "nginx && pnpm run prisma-db-push && pnpm run pm2"]
+CMD ["sh", "-c", "nginx && exec runuser -u www -- env HOME=/tmp pnpm run pm2"]

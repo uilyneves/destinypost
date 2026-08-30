@@ -23,7 +23,10 @@ describe('AiProviderTestService', () => {
 
     expect(global.fetch).toHaveBeenCalledWith(
       'https://api.destinyai.com.br/v1/models',
-      { headers: { Authorization: 'Bearer secret' } }
+      expect.objectContaining({
+        headers: { Authorization: 'Bearer secret' },
+        signal: expect.any(AbortSignal),
+      })
     );
     expect(result).toEqual({ ok: true });
   });
@@ -38,7 +41,10 @@ describe('AiProviderTestService', () => {
 
     expect(global.fetch).toHaveBeenCalledWith(
       'https://omniroute.example.com/v1/models',
-      { headers: { Authorization: 'Bearer omni-secret' } }
+      expect.objectContaining({
+        headers: { Authorization: 'Bearer omni-secret' },
+        signal: expect.any(AbortSignal),
+      })
     );
     expect(result).toEqual({ ok: true });
   });

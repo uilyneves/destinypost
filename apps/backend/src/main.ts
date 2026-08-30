@@ -21,6 +21,7 @@ import { startMcp } from '@gitroom/nestjs-libraries/chat/start.mcp';
 import { PrismaClient } from '@prisma/client';
 
 async function start() {
+  assertProductionConfiguration();
   const app = await NestFactory.create(AppModule, {
     rawBody: true,
     cors: {
@@ -47,7 +48,9 @@ async function start() {
       ],
       origin: [
         process.env.FRONTEND_URL,
-        'http://localhost:6274',
+        ...(process.env.NODE_ENV !== 'production'
+          ? ['http://localhost:6274']
+          : []),
         ...(process.env.MAIN_URL ? [process.env.MAIN_URL] : []),
       ],
     },
@@ -58,6 +61,7 @@ async function start() {
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
+      whitelist: true,
     })
   );
 
@@ -78,7 +82,12 @@ async function start() {
   app.useGlobalFilters(new SubscriptionExceptionFilter());
   app.useGlobalFilters(new HttpExceptionFilter());
 
-  loadSwagger(app);
+  if (
+    process.env.NODE_ENV !== 'production' ||
+    process.env.ENABLE_SWAGGER === 'true'
+  ) {
+    loadSwagger(app);
+  }
 
   // Auto-migrate orphan records to default profile (idempotent)
   await migrateOrphanRecordsToDefaultProfile();
@@ -94,6 +103,23 @@ async function start() {
     Logger.log(`🚀 Backend is running on: http://localhost:${port}`);
   } catch (e) {
     Logger.error(`Backend failed to start on port ${port}`, e);
+  }
+}
+
+function assertProductionConfiguration() {
+  if (process.env.NODE_ENV !== 'production') return;
+  if (process.env.NOT_SECURED) {
+    throw new Error('NOT_SECURED nao pode ser usado em producao.');
+  }
+  const jwtSecret = process.env.JWT_SECRET?.trim();
+  if (!jwtSecret || jwtSecret.length < 32 || jwtSecret.includes('random string')) {
+    throw new Error('JWT_SECRET deve ter pelo menos 32 caracteres em producao.');
+  }
+  const encryptionKey = process.env.ENCRYPTION_KEY?.trim();
+  if (!encryptionKey || encryptionKey.length < 32) {
+    throw new Error(
+      'ENCRYPTION_KEY independente deve ter pelo menos 32 caracteres em producao.'
+    );
   }
 }
 

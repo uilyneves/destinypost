@@ -1,6 +1,6 @@
 # @destinyai-dev/destinypost-agent
 
-CLI/skill do **DestinyPost** para agentes de IA. Wrapper fino e sem dependências
+CLI/skill do **MultiPost** para agentes de IA. Wrapper fino e sem dependências
 sobre a API pública (`/public/v1/*`) de uma instância **self-hosted**. Diferente do
 CLI oficial do Postiz, inclui as **automações de comentário (flows)**.
 

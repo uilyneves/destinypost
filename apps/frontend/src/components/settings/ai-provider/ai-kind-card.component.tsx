@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import clsx from 'clsx';
+import Image from 'next/image';
 import { useFetch } from '@gitroom/helpers/utils/custom.fetch';
 import { Button } from '@gitroom/react/form/button';
 import { useToaster } from '@gitroom/react/toaster/toaster';
@@ -66,8 +67,7 @@ const isCustomOpenAiProvider = (provider: string) =>
 function providerIcon(providerId: string): React.ReactNode {
   const path = PROVIDER_ICON_PATHS[providerId];
   if (!path) return null;
-  // eslint-disable-next-line @next/next/no-img-element
-  return <img src={path} alt={providerId} className="w-[16px] h-[16px]" />;
+  return <Image src={path} alt={providerId} width={16} height={16} />;
 }
 
 interface FormState {
@@ -530,19 +530,13 @@ const CredentialForm: React.FC<CredentialFormProps> = ({
         ...emptyState,
         provider: defaultProvider,
         model: initialModel,
+        options:
+          defaultProvider === 'omniroute'
+            ? { baseUrl: OMNIROUTE_BASE_URL }
+            : {},
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    credential?.updatedAt,
-    credential?.provider,
-    credential?.model,
-    credential?.fallbackModel,
-    credential?.shareDefault,
-    configured,
-    editing,
-    defaultProvider,
-  ]);
+  }, [credential, configured, editing, defaultProvider, kind]);
 
   const updateField = useCallback(
     <K extends keyof FormState>(key: K, value: FormState[K]) => {
@@ -593,7 +587,7 @@ const CredentialForm: React.FC<CredentialFormProps> = ({
       return;
     }
     if (
-      kind === 'TEXT' &&
+      (kind === 'TEXT' || kind === 'IMAGE') &&
       isCustomOpenAiProvider(form.provider) &&
       !form.model.trim()
     ) {
@@ -604,7 +598,7 @@ const CredentialForm: React.FC<CredentialFormProps> = ({
       return;
     }
     if (
-      kind === 'TEXT' &&
+      (kind === 'TEXT' || kind === 'IMAGE') &&
       isCustomOpenAiProvider(form.provider) &&
       !String(form.options.baseUrl ?? '').trim()
     ) {
@@ -816,7 +810,8 @@ const CredentialForm: React.FC<CredentialFormProps> = ({
       {form.provider && kind !== 'WEB_SEARCH' && (
         <>
           <FieldRow label={t('ai_provider_model', 'Modelo principal')}>
-            {kind === 'TEXT' && isCustomOpenAiProvider(form.provider) ? (
+            {(kind === 'TEXT' || kind === 'IMAGE') &&
+            isCustomOpenAiProvider(form.provider) ? (
               <div className="bg-newBgColorInner h-[42px] border-newTableBorder border rounded-[8px] flex items-center">
                 <input
                   className="h-full bg-transparent outline-none flex-1 text-[14px] px-[16px] disabled:opacity-100 disabled:cursor-default"
@@ -1114,6 +1109,60 @@ const DynamicOptions: React.FC<{
   }
 
   if (kind === 'IMAGE') {
+    if (isCustomOpenAiProvider(provider)) {
+      return (
+        <>
+          <FieldRow
+            label={t('ai_provider_compatible_endpoint', 'URL do endpoint')}
+          >
+            <div className="bg-newBgColorInner h-[42px] border-newTableBorder border rounded-[8px] flex items-center">
+              <input
+                className="h-full bg-transparent outline-none flex-1 text-[14px] px-[16px] disabled:opacity-100 disabled:cursor-default"
+                type="url"
+                placeholder="https://api.exemplo.com/v1"
+                value={options.baseUrl ?? ''}
+                disabled={disabled}
+                onChange={(e) => onChange('baseUrl', e.target.value)}
+              />
+            </div>
+          </FieldRow>
+          <FieldRow label={t('ai_provider_image_size', 'Resolução')}>
+            <div className="flex gap-[8px]">
+              {['1K', '2K', '4K'].map((size) => (
+                <label key={size} className="flex items-center gap-[6px]">
+                  <input
+                    type="radio"
+                    name="compatible-image-size"
+                    value={size}
+                    checked={options.imageSize === size}
+                    disabled={disabled}
+                    onChange={() => onChange('imageSize', size)}
+                  />
+                  <span className="text-[14px]">{size}</span>
+                </label>
+              ))}
+            </div>
+          </FieldRow>
+          <FieldRow label={t('ai_provider_image_quality', 'Qualidade')}>
+            <div className="flex gap-[8px]">
+              {['low', 'medium', 'high'].map((quality) => (
+                <label key={quality} className="flex items-center gap-[6px]">
+                  <input
+                    type="radio"
+                    name="compatible-image-quality"
+                    value={quality}
+                    checked={options.quality === quality}
+                    disabled={disabled}
+                    onChange={() => onChange('quality', quality)}
+                  />
+                  <span className="text-[14px] capitalize">{quality}</span>
+                </label>
+              ))}
+            </div>
+          </FieldRow>
+        </>
+      );
+    }
     if (provider === 'openrouter') {
       return (
         <FieldRow label={t('ai_provider_image_size', 'Resolução')}>
@@ -1360,8 +1409,21 @@ function sanitizeOptions(
       continue;
     }
     if (kind === 'IMAGE') {
-      if (key === 'imageSize' && provider !== 'openrouter') continue;
-      if (key === 'quality' && provider !== 'openai') continue;
+      if (key === 'baseUrl' && !isCustomOpenAiProvider(provider)) continue;
+      if (
+        key === 'imageSize' &&
+        provider !== 'openrouter' &&
+        !isCustomOpenAiProvider(provider)
+      ) {
+        continue;
+      }
+      if (
+        key === 'quality' &&
+        provider !== 'openai' &&
+        !isCustomOpenAiProvider(provider)
+      ) {
+        continue;
+      }
     }
     if (kind === 'WEB_SEARCH' && key === 'maxResults') {
       const num = Number(value);

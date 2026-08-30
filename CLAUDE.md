@@ -1,8 +1,8 @@
-# DestinyPost — Claude Code Instructions
+# MultiPost — Claude Code Instructions
 
 ## Identity
 
-**DestinyPost** is a fork of [Postiz](https://github.com/gitroomhq/postiz-app) (AGPL-3.0), maintained by Destiny AI. Self-hosted social media scheduler with 33+ channels, calendar-based scheduling, analytics, media library, and a per-workspace AI layer.
+**MultiPost** is a fork of [Postiz](https://github.com/gitroomhq/postiz-app) (AGPL-3.0), maintained by Dragão Negro. Self-hosted social media scheduler with 33+ channels, calendar-based scheduling, analytics, media library, and a per-workspace AI layer.
 
 ## Stack
 
@@ -186,7 +186,7 @@ The `.mcp.json` in this repo registers a Graphify MCP server providing `mcp__gra
 ## Product Context
 
 - **Default language:** pt-BR (`react-shared-libraries/src/translation/locales/pt`). User-facing text uses full pt-BR accents.
-- **Branding:** "DestinyPost" — Postiz credits preserved as required by AGPL.
+- **Branding:** "MultiPost" — Postiz credits preserved as required by AGPL.
 - **Zernio (formerly Late / getlate.dev):** TikTok and Pinterest via [Zernio API](https://docs.zernio.com/llms-full.txt) as alternative provider. Details in [`libraries/nestjs-libraries/src/integrations/social/CLAUDE.md`](libraries/nestjs-libraries/src/integrations/social/CLAUDE.md).
 - **Billing:** disabled by default (`DISABLE_BILLING=true`).
 - **Marketplace:** disabled by default (`DISABLE_MARKETPLACE=true`).

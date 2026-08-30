@@ -209,6 +209,12 @@ propria na UI. O admin informa a URL base (incluindo `/v1`), a chave e o ID
 do modelo/combo. O backend valida a conexao em `GET {baseUrl}/models` e mantem
 a chave dentro da camada criptografada de credenciais.
 
+Para `IMAGE`, o mesmo provider suporta T2I em
+`POST {baseUrl}/images/generations` e I2I em
+`POST {baseUrl}/images/edits`. A resposta pode trazer `b64_json`, data URL ou
+URL HTTPS; URLs remotas sao baixadas com resolucao de DNS protegida contra
+enderecos privados e rebinding. Modelo e endpoint HTTPS sao obrigatorios.
+
 ### 3.4. AiTextService
 
 `ai-text.service.ts` — Substitui metodos legados do `OpenaiService`.

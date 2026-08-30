@@ -100,7 +100,9 @@ export class AiCredentialService {
       }
     }
 
-    if (kind === 'TEXT' && payload.provider === 'openai-compatible') {
+    const isOpenAiCompatible =
+      payload.provider === 'openai-compatible' || payload.provider === 'omniroute';
+    if ((kind === 'TEXT' || kind === 'IMAGE') && isOpenAiCompatible) {
       if (!payload.model?.trim()) {
         throw new HttpException(
           'Informe o ID do modelo OpenAI compativel.',

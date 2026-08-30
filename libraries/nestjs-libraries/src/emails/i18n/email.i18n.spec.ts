@@ -123,7 +123,7 @@ describe('renderDigestEmail', () => {
       ],
       'en'
     );
-    expect(subject).toBe('[DestinyPost] Your latest notifications');
+    expect(subject).toBe('[MultiPost] Your latest notifications');
     expect(html).toContain('<br/>');
   });
 });

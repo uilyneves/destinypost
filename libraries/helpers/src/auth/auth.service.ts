@@ -40,10 +40,15 @@ export class AuthService {
     return compareSync(password, hash);
   }
   static signJWT(value: object) {
-    return sign(value, process.env.JWT_SECRET!);
+    return sign(value, process.env.JWT_SECRET!, {
+      algorithm: 'HS256',
+      expiresIn: '30d',
+    });
   }
   static verifyJWT(token: string) {
-    return verify(token, process.env.JWT_SECRET!);
+    return verify(token, process.env.JWT_SECRET!, {
+      algorithms: ['HS256'],
+    });
   }
 
   static fixedEncryption(value: string) {

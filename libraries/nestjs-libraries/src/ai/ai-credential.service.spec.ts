@@ -113,6 +113,25 @@ describe('AiCredentialService', () => {
         })
       ).rejects.toThrow();
     });
+
+    it('deve exigir modelo e endpoint para imagem via OmniRoute', async () => {
+      await expect(
+        service.save('org-1', 'WORKSPACE', 'IMAGE', {
+          provider: 'omniroute',
+          apiKey: 'sk',
+          options: {},
+        })
+      ).rejects.toThrow(HttpException);
+
+      await expect(
+        service.save('org-1', 'WORKSPACE', 'IMAGE', {
+          provider: 'omniroute',
+          apiKey: 'sk',
+          model: 'image-model',
+          options: {},
+        })
+      ).rejects.toThrow(HttpException);
+    });
   });
 
   describe('getRedacted', () => {

@@ -8,7 +8,7 @@ services:
       MAIN_URL: 'http://localhost:4007'
       FRONTEND_URL: 'http://localhost:4007'
       NEXT_PUBLIC_BACKEND_URL: 'http://localhost:4007/api'
-      JWT_SECRET: 'random string that is unique to every install - just type random characters here!'
+      JWT_SECRET: '${JWT_SECRET:?Defina JWT_SECRET com pelo menos 32 caracteres}'
       DATABASE_URL: 'postgresql://postiz-user:postiz-password@postiz-postgres:5432/postiz-db-local'
       REDIS_URL: 'redis://postiz-redis:6379'
       BACKEND_INTERNAL_URL: 'http://localhost:3000'
@@ -17,7 +17,7 @@ services:
       # TEMPORAL_API_KEY: ''
       # TEMPORAL_TLS: 'false'
       IS_GENERAL: 'true'
-      DISABLE_REGISTRATION: 'false'
+      DISABLE_REGISTRATION: 'true'
 
       # === Storage Settings
       STORAGE_PROVIDER: 'local'
@@ -185,7 +185,7 @@ services:
 
       # Chave mestra para criptografia de credenciais (separada do JWT_SECRET)
       # Gere com: openssl rand -base64 32
-      ENCRYPTION_KEY: ''
+      ENCRYPTION_KEY: '${ENCRYPTION_KEY:?Defina ENCRYPTION_KEY com pelo menos 32 caracteres}'
 
     volumes:
       - postiz-config:/config/
@@ -278,8 +278,8 @@ services:
 
   temporal:
     container_name: temporal
-    ports:
-      - '7233:7233'
+    expose:
+      - '7233'
     image: temporalio/auto-setup:1.28.1
     depends_on:
       - temporal-postgresql
@@ -324,7 +324,7 @@ services:
     networks:
       - temporal-network
     ports:
-      - '8080:8080'
+      - '127.0.0.1:8080:8080'
 
 volumes:
   postgres-volume:

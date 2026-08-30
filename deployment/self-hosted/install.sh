@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-PRODUCT_NAME="DestinyPost"
+PRODUCT_NAME="MultiPost"
 DEFAULT_INSTALL_DIR="/opt/destinypost"
 DEFAULT_IMAGE="ghcr.io/destinyai-dev/destinypost:latest"
 DEFAULT_RELEASE_REPOSITORY="destinyai-dev/destinypost"
@@ -100,7 +100,7 @@ fi
   fail "Email invalido."
 
 if [[ -z "$GITHUB_TOKEN" ]]; then
-  read -r -s -p "Token de leitura da distribuicao DestinyPost: " GITHUB_TOKEN
+  read -r -s -p "Token de leitura da distribuicao MultiPost: " GITHUB_TOKEN
   printf '\n'
 fi
 [[ -n "$GITHUB_TOKEN" ]] ||
@@ -249,7 +249,7 @@ install -m 0755 "$INSTALL_DIR/destinypost" /usr/local/bin/destinypost
 
 cat >/etc/systemd/system/destinypost-backup.service <<EOF
 [Unit]
-Description=Backup diario do DestinyPost
+Description=Backup diario do MultiPost
 Requires=docker.service
 After=docker.service
 
@@ -261,7 +261,7 @@ EOF
 
 cat >/etc/systemd/system/destinypost-backup.timer <<'EOF'
 [Unit]
-Description=Agenda o backup diario do DestinyPost
+Description=Agenda o backup diario do MultiPost
 
 [Timer]
 OnCalendar=*-*-* 03:15:00
@@ -298,13 +298,13 @@ docker logout ghcr.io >/dev/null 2>&1 || true
   docker compose up -d
 )
 
-say "Aguardando o DestinyPost ficar pronto"
+say "Aguardando o MultiPost ficar pronto"
 READY="false"
 for _ in $(seq 1 90); do
   if [[ "$(docker inspect --format '{{.State.Restarting}}' destinypost-app-1 2>/dev/null || true)" == "true" ]]; then
     say "O servico principal reiniciou durante a inicializacao. Ultimos logs:"
     docker logs --tail 40 destinypost-app-1 2>&1 || true
-    fail "O DestinyPost nao conseguiu iniciar. Consulte os logs acima."
+    fail "O MultiPost nao conseguiu iniciar. Consulte os logs acima."
   fi
   if curl --fail --silent --show-error "https://${DOMAIN}/" >/dev/null 2>&1; then
     READY="true"

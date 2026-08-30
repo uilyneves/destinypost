@@ -1,6 +1,7 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { AiProviderResolverService } from './ai-provider-resolver.service';
 import { ImageOptions } from './ai-credential.schemas';
+import { ssrfSafeDispatcher } from '../dtos/webhooks/ssrf.safe.dispatcher';
 
 const OPENAI_IMAGE_GEN_URL = 'https://api.openai.com/v1/images/generations';
 const OPENAI_IMAGE_EDIT_URL = 'https://api.openai.com/v1/images/edits';
@@ -190,6 +191,39 @@ export class AiImageService {
         aspectRatio,
         mode === 'I2I' ? opts.referenceImageUrl : undefined
       );
+    } else if (
+      credential.provider === 'omniroute' ||
+      credential.provider === 'openai-compatible'
+    ) {
+      if (!credential.model?.trim()) {
+        throw new HttpException(
+          'Informe o ID do modelo de imagem OpenAI compativel.',
+          400
+        );
+      }
+      modelUsed = credential.model;
+      const baseUrl = this.compatibleBaseUrl(options);
+      base64 =
+        mode === 'I2I'
+          ? await this.generateCompatibleEdit(
+              baseUrl,
+              credential.apiKey,
+              modelUsed,
+              prompt,
+              opts.referenceImageUrl as string,
+              options,
+              aspectRatio,
+              credential.provider
+            )
+          : await this.generateCompatible(
+              baseUrl,
+              credential.apiKey,
+              modelUsed,
+              prompt,
+              options,
+              aspectRatio,
+              credential.provider
+            );
     } else {
       this._logger.warn(
         `Provider sem suporte para imagem: ${credential.provider} (credentialId=${credential.id})`
@@ -214,6 +248,156 @@ export class AiImageService {
       model: modelUsed,
       credentialId: credential.id,
     };
+  }
+
+  private compatibleBaseUrl(options: ImageOptions): string {
+    const raw = options.baseUrl?.trim();
+    if (!raw) {
+      throw new HttpException(
+        'Informe a URL do endpoint OpenAI compativel.',
+        400
+      );
+    }
+    let parsed: URL;
+    try {
+      parsed = new URL(raw);
+    } catch {
+      throw new HttpException('URL do endpoint OpenAI compativel invalida.', 400);
+    }
+    if (parsed.protocol !== 'https:' || parsed.username || parsed.password) {
+      throw new HttpException(
+        'O endpoint de imagem deve usar HTTPS e nao pode conter credenciais.',
+        400
+      );
+    }
+    return parsed.toString().replace(/\/$/, '');
+  }
+
+  private async compatibleImageFromResponse(
+    res: Response,
+    provider: string
+  ): Promise<string> {
+    const raw = await res.text();
+    if (!res.ok) {
+      this._logger.warn(
+        `${provider} images retornou ${res.status}: ${raw.slice(0, 200)}`
+      );
+      throw new HttpException(extractOpenAiError(raw, res.status), 502);
+    }
+    let json: { data?: Array<{ b64_json?: string; url?: string }> };
+    try {
+      json = JSON.parse(raw);
+    } catch {
+      throw new HttpException(`${provider} devolveu JSON invalido.`, 502);
+    }
+    const item = json.data?.[0];
+    if (item?.b64_json) return item.b64_json;
+    if (item?.url?.startsWith('data:image/')) {
+      return item.url.replace(/^data:image\/[^;]+;base64,/, '');
+    }
+    if (item?.url) {
+      const image = await fetch(item.url, {
+        signal: AbortSignal.timeout(REFERENCE_IMAGE_TIMEOUT_MS),
+        // @ts-ignore — opcao do undici ausente em lib.dom
+        dispatcher: ssrfSafeDispatcher,
+      });
+      if (!image.ok) {
+        throw new HttpException(
+          `${provider} devolveu uma imagem inacessivel (HTTP ${image.status}).`,
+          502
+        );
+      }
+      return Buffer.from(await image.arrayBuffer()).toString('base64');
+    }
+    throw new HttpException(`${provider} nao devolveu imagem.`, 502);
+  }
+
+  private async generateCompatible(
+    baseUrl: string,
+    apiKey: string,
+    model: string,
+    prompt: string,
+    options: ImageOptions,
+    aspectRatio: AiAspectRatio,
+    provider: string
+  ): Promise<string> {
+    const body: Record<string, unknown> = {
+      model,
+      prompt,
+      n: options.numImages ?? 1,
+      size: ASPECT_TO_OPENAI_SIZE[aspectRatio],
+      response_format: 'b64_json',
+    };
+    if (options.quality && options.quality !== 'auto') {
+      body.quality = options.quality;
+    }
+    try {
+      const res = await fetch(`${baseUrl}/images/generations`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(IMAGE_GENERATION_TIMEOUT_MS),
+        // @ts-ignore — opcao do undici ausente em lib.dom
+        dispatcher: ssrfSafeDispatcher,
+      });
+      return await this.compatibleImageFromResponse(res, provider);
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw imageFetchError(provider, error, IMAGE_GENERATION_TIMEOUT_MS);
+    }
+  }
+
+  private async generateCompatibleEdit(
+    baseUrl: string,
+    apiKey: string,
+    model: string,
+    prompt: string,
+    referenceImageUrl: string,
+    options: ImageOptions,
+    aspectRatio: AiAspectRatio,
+    provider: string
+  ): Promise<string> {
+    const reference = await fetch(referenceImageUrl, {
+      signal: AbortSignal.timeout(REFERENCE_IMAGE_TIMEOUT_MS),
+      // @ts-ignore — opcao do undici ausente em lib.dom
+      dispatcher: ssrfSafeDispatcher,
+    });
+    if (!reference.ok) {
+      throw new HttpException(
+        `Nao foi possivel baixar a imagem de referencia (HTTP ${reference.status}).`,
+        502
+      );
+    }
+    const form = new FormData();
+    form.set('model', model);
+    form.set('prompt', prompt);
+    form.set('n', String(options.numImages ?? 1));
+    form.set('size', ASPECT_TO_OPENAI_SIZE[aspectRatio]);
+    form.set('response_format', 'b64_json');
+    form.set(
+      'image',
+      new Blob([new Uint8Array(await reference.arrayBuffer())], {
+        type: reference.headers.get('content-type') ?? 'application/octet-stream',
+      }),
+      'reference-image'
+    );
+    try {
+      const res = await fetch(`${baseUrl}/images/edits`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${apiKey}` },
+        body: form,
+        signal: AbortSignal.timeout(IMAGE_GENERATION_TIMEOUT_MS),
+        // @ts-ignore — opcao do undici ausente em lib.dom
+        dispatcher: ssrfSafeDispatcher,
+      });
+      return await this.compatibleImageFromResponse(res, provider);
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      throw imageFetchError(provider, error, IMAGE_GENERATION_TIMEOUT_MS);
+    }
   }
 
   private async generateOpenAi(
@@ -297,6 +481,8 @@ export class AiImageService {
     try {
       refRes = await fetch(referenceImageUrl, {
         signal: AbortSignal.timeout(REFERENCE_IMAGE_TIMEOUT_MS),
+        // @ts-ignore — opcao do undici ausente em lib.dom
+        dispatcher: ssrfSafeDispatcher,
       });
     } catch (err) {
       this._logger.error(

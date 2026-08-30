@@ -332,7 +332,10 @@ export class AiTextService {
       'Gere o DNA de marca e uma sintese estrategica acionavel.',
     ].join('\n\n');
 
-    if (client.provider === 'openai-compatible') {
+    if (
+      client.provider === 'openai-compatible' ||
+      client.provider === 'omniroute'
+    ) {
       return this.generateCompatibleJson(
         client,
         InstagramBrandDnaSchema,
@@ -387,7 +390,10 @@ export class AiTextService {
       .filter(Boolean)
       .join('\n\n');
 
-    if (client.provider === 'openai-compatible') {
+    if (
+      client.provider === 'openai-compatible' ||
+      client.provider === 'omniroute'
+    ) {
       const compatible = await this.generateCompatibleJson(
         client,
         InstagramContentIdeasSchema,

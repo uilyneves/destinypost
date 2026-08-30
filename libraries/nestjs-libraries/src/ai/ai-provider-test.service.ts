@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ssrfSafeDispatcher } from '../dtos/webhooks/ssrf.safe.dispatcher';
 
 export interface AiProviderTestResult {
   ok: boolean;
@@ -105,6 +106,9 @@ export class AiProviderTestService {
     const modelsUrl = `${baseUrl.toString().replace(/\/$/, '')}/models`;
     const res = await fetch(modelsUrl, {
       headers: { Authorization: `Bearer ${apiKey}` },
+      signal: AbortSignal.timeout(15_000),
+      // @ts-ignore — opcao do undici ausente em lib.dom
+      dispatcher: ssrfSafeDispatcher,
     });
     if (!res.ok) {
       return {

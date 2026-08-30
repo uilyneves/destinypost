@@ -256,6 +256,77 @@ describe('AiImageService', () => {
     });
   });
 
+  describe('generate (OmniRoute)', () => {
+    it('deve gerar imagem pelo endpoint OpenAI compativel configurado', async () => {
+      resolver.resolve.mockResolvedValue(
+        credentialFor({
+          provider: 'omniroute',
+          model: 'google/gemini-image',
+          options: {
+            baseUrl: 'https://omniroute.example.com/v1/',
+            quality: 'high',
+          },
+        }) as any
+      );
+      const fetchSpy = jest.fn(
+        async () =>
+          new Response(JSON.stringify({ data: [{ b64_json: 'OMNI_IMAGE' }] }), {
+            status: 200,
+          })
+      );
+      globalThis.fetch = fetchSpy as any;
+
+      const result = await service.generate('org-1', 'dragao negro', undefined, {
+        aspectRatio: '16:9',
+      });
+
+      const [url, init] = fetchSpy.mock.calls[0] as any;
+      expect(url).toBe('https://omniroute.example.com/v1/images/generations');
+      expect(JSON.parse(init.body)).toEqual(
+        expect.objectContaining({
+          model: 'google/gemini-image',
+          prompt: 'dragao negro',
+          size: '1536x1024',
+          quality: 'high',
+        })
+      );
+      expect(result).toEqual(
+        expect.objectContaining({
+          base64: 'OMNI_IMAGE',
+          provider: 'omniroute',
+          model: 'google/gemini-image',
+        })
+      );
+    });
+
+    it('deve baixar a imagem quando OmniRoute responder com URL', async () => {
+      resolver.resolve.mockResolvedValue(
+        credentialFor({
+          provider: 'omniroute',
+          model: 'image-model',
+          options: { baseUrl: 'https://omniroute.example.com/v1' },
+        }) as any
+      );
+      let call = 0;
+      globalThis.fetch = jest.fn(async () => {
+        call++;
+        return call === 1
+          ? new Response(
+              JSON.stringify({ data: [{ url: 'https://cdn.example.com/out.png' }] }),
+              { status: 200 }
+            )
+          : new Response(new Uint8Array([1, 2, 3]), {
+              status: 200,
+              headers: { 'Content-Type': 'image/png' },
+            });
+      }) as any;
+
+      const result = await service.generate('org-1', 'x');
+
+      expect(result.base64).toBe(Buffer.from([1, 2, 3]).toString('base64'));
+    });
+  });
+
   describe('provider desconhecido', () => {
     it('deve lancar 400', async () => {
       resolver.resolve.mockResolvedValue(

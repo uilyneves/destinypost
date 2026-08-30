@@ -27,6 +27,14 @@ export type TextOptions = z.infer<typeof TextOptionsSchema>;
 
 export const ImageOptionsSchema = z
   .object({
+    baseUrl: z
+      .string()
+      .url()
+      .max(2048)
+      .refine((value) => /^https:\/\//i.test(value), {
+        message: 'A URL deve usar https://',
+      })
+      .optional(),
     quality: z.enum(['low', 'medium', 'high', 'auto']).optional(),
     imageSize: z.enum(['0.5K', '1K', '2K', '4K']).optional(),
     numImages: z.number().int().min(1).max(4).optional(),
